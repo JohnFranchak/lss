@@ -8,8 +8,8 @@ library(gridExtra)
 library(rcompanion)
 library(psych)
 library(ggforce)
+library(patchwork)
 
-setwd("~/Dropbox/LSS")
 cbp1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 theme_update(text = element_text(size = 18),
@@ -21,7 +21,7 @@ theme_update(text = element_text(size = 18),
       legend.key = element_rect(fill = "white")) 
 
 # CREATE DATA SET ---------------------------------------------------------------
-ds <- read_csv("~/Dropbox/LSS/summary_stats_LSS1.csv", na = "NaN")
+ds <- read_csv("summary_stats_LSS1.csv", na = "NaN")
 ds <- mutate(ds, id = factor(id))
 #ds <- filter(ds, id != 212 & id != 203) 
 ds[ds["id"] == 13, "search_eyex_speed"] <- NA
@@ -90,8 +90,9 @@ describe(ds[,c("walk_path_speed", "search_path_speed")], na.rm = T)
   geom_errorbar(aes(x = task, ymin = ymin, ymax = ymax), color = "black", size =1, width = .3, position = position_dodge(.6)) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
   labs(x = "", y = "Walking speed (m/s)") + 
-  scale_y_continuous(breaks = c(.25, .5, .75, 1, 1.25, 1.5), limits = c(.25, 1.5)) + 
-  ggsave("figures/lss1_walking_speed.pdf", units = "in", width = 5, height = 4)
+  scale_y_continuous(breaks = c(.25, .5, .75, 1, 1.25, 1.5), limits = c(.25, 1.5)) +
+    theme(legend.position = "none") -> p1
+  #ggsave("figures/lss1_walking_speed.pdf", units = "in", width = 5, height = 4)
 
 #SPEED SD BY TASK
 t.test(ds$walk_path_speed_sd, ds$search_path_speed_sd, paired = T)
@@ -106,14 +107,16 @@ dsl %>%  group_by(task) %>%
   geom_sina(data = dsl, aes(y = speed, x = task, color = task), maxwidth = .5, position = position_dodge(.6), alpha = .5, size = 3, na.rm = T) +
   geom_errorbar(aes(x = task, ymin = ymin, ymax = ymax), color = "black", size =1, width = .3, position = position_dodge(.6)) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
-  labs(x = "", y = "Walking speed SD (m/s)") + 
-  scale_y_continuous(breaks = c(0, .25, .5, .75, 1), limits = c(0,1)) + 
-  ggsave("figures/lss1_walking_speed_sd.pdf", units = "in", width = 5, height = 4)
+  labs(x = "", y = "Walking speed SD (m/s)") +
+  scale_y_continuous(breaks = c(0, .25, .5, .75, 1), limits = c(0,1)) +
+  theme(legend.position = "none") -> p2
+  #ggsave("figures/lss1_walking_speed_sd.pdf", units = "in", width = 5, height = 4)
 
 #STRAIGHTNESS BY TASK
 t.test(ds$walk_straightness, ds$search_straightness, paired = T)
 cor.test(ds$walk_straightness, ds$search_straightness)
 describe(ds[,c("walk_straightness", "search_straightness")], na.rm = T)
+
 ds %>% gather(key = "task", value = "speed", "walk_straightness", "search_straightness") %>% 
   mutate(task = factor(task, levels = c("walk_straightness", "search_straightness"), labels = c("Walk", "Search"))) -> dsl
 dsl %>%  group_by(task) %>% 
@@ -123,5 +126,10 @@ dsl %>%  group_by(task) %>%
   geom_errorbar(aes(x = task, ymin = ymin, ymax = ymax), color = "black", size =1, width = .3, position = position_dodge(.6)) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
   labs(x = "", y = "Straightness ratio") + 
-  scale_y_continuous(breaks = c(0, 2.5, 5, 7.5), limits = c(0,7.5)) + 
-  ggsave("figures/lss1_walking_straightness.pdf", units = "in", width = 5, height = 4)
+  scale_y_continuous(breaks = c(0, 2.5, 5, 7.5), limits = c(0,7.5)) +
+  theme(legend.position = "none") -> p3
+  #ggsave("figures/lss1_walking_straightness.pdf", units = "in", width = 5, height = 4)
+
+  p1 + p2 + p3
+  ggsave("figures/lss1_walking_stats_composite.pdf", units = "in", width = 9, height = 4)
+  
