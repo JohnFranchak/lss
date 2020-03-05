@@ -1,8 +1,7 @@
-pkgs <- c("multcomp", "emmeans", "tidyverse", "effects", "lme4", "lmerTest", "psych","ggforce")
+pkgs <- c("multcomp", "emmeans", "tidyverse", "effects", "lme4", "lmerTest", "psych","ggforce","patchwork")
 #lapply(pkgs[!(pkgs %in% installed.packages())], install.packages)
 lapply(pkgs, library, character.only = TRUE)
 
-setwd("~/Dropbox/LSS")
 cbp1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73","#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 theme_update(text = element_text(size = 18),
              axis.text.x = element_text(size = 18, color = "black"), axis.title.x = element_text(size = 21, margin = margin(t = 0, r = 0, b = 10, l = 0)),
@@ -15,7 +14,7 @@ theme_update(text = element_text(size = 18),
 #****TRY PATCHWORK PACKAGE TO PUT PLOTS TOGETHER
 
 # CREATE DATA SET ---------------------------------------------------------------
-ds <- read_csv("~/Dropbox/LSS/summary_stats_mot_corrected.csv", na = "NaN")
+ds <- read_csv("summary_stats_mot_corrected.csv", na = "NaN")
 ds <- mutate(ds, id = factor(id))
 ds <- filter(ds, id != 212 & id != 203) 
 ds[ds["id"] == 229, "walk_posy_speed"] <- NA
@@ -152,7 +151,8 @@ describe(ds[,c("walk_path_speed", "search_path_speed")], na.rm = T)
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
   labs(x = "", y = "Walking speed (m/s)") + 
   scale_y_continuous(breaks = c(.25, .5, .75, 1, 1.25, 1.5), limits = c(.25, 1.5)) + 
-  ggsave("figures/lss2_walking_speed.pdf", units = "in", width = 5, height = 4)
+  theme(legend.position = "none") -> p1
+  #ggsave("figures/lss2_walking_speed.pdf", units = "in", width = 5, height = 4)
 
 #SPEED SD BY TASK
 t.test(ds$walk_path_speed_sd, ds$search_path_speed_sd, paired = T)
@@ -169,7 +169,8 @@ dsl %>%  group_by(task) %>%
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
   labs(x = "", y = "Walking speed SD (m/s)") + 
   scale_y_continuous(breaks = c(0, .25, .5, .75, 1), limits = c(0,1)) + 
-  ggsave("figures/lss2_walking_speed_sd.pdf", units = "in", width = 5, height = 4)
+  theme(legend.position = "none") -> p2
+  #ggsave("figures/lss2_walking_speed_sd.pdf", units = "in", width = 5, height = 4)
 
 #STRAIGHTNESS BY TASK
 t.test(ds$walk_straightness, ds$search_straightness, paired = T)
@@ -185,8 +186,11 @@ dsl %>%  group_by(task) %>%
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
   labs(x = "", y = "Straightness ratio") + 
   scale_y_continuous(breaks = c(0, 2.5, 5, 7.5), limits = c(0,7.5)) + 
-  ggsave("figures/lss2_walking_straightness.pdf", units = "in", width = 5, height = 4)
+  theme(legend.position = "none") -> p3
+  #ggsave("figures/lss2_walking_straightness.pdf", units = "in", width = 5, height = 4)
 
+p1 + p2 + p3
+ggsave("figures/lss2_walking_stats_composite.pdf", units = "in", width = 9, height = 4)
 
 
 
