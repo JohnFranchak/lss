@@ -10,7 +10,7 @@ library(psych)
 library(ggforce)
 library(interactions)
 
-setwd("~/Dropbox/LSS")
+setwd("~/Documents/Github/lss")
 cbp1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 theme_update(text = element_text(size = 18),
@@ -23,7 +23,7 @@ theme_update(text = element_text(size = 18),
 
 
 # CREATE DATA SET ---------------------------------------------------------------
-ds <- read_csv("~/Dropbox/LSS/summary_stats_peaks.csv", na = "NaN")
+ds <- read_csv("summary_stats_peaks.csv", na = "NaN")
 ds <- filter(ds, ds$opp == 0)
 ds <- mutate(ds, id = factor(id))
 ds$task <- factor(ds$cond)
@@ -111,9 +111,9 @@ ds %>% group_by(task, bin) %>%
     geom_smooth(aes(x = total, y = abs(head), color = task), linetype = "dashed") +
     xlim(0,100) + ylim(0,100) + geom_abline(intercept = 0, slope = 1, color = "gray")
   
-  #Both as proportion
+  #Head as proportion
   ggplot(data = filter(ds, total > 5 & total < 100)) + 
-    geom_smooth(aes(x = total, y = eye_prop, color = task)) +
+    #geom_smooth(aes(x = total, y = eye_prop, color = task)) +
     geom_smooth(aes(x = total, y = head_prop, color = task), linetype = "dashed") +
     xlim(0,100) + ylim(0,1) + geom_hline(yintercept = .5, color = "gray")
   
