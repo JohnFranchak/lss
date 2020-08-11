@@ -26,10 +26,10 @@ theme_update(text = element_text(size = 18),
 ds <- read_csv("summary_stats_peaks.csv", na = "NaN")
 ds <- filter(ds, ds$opp == 0)
 ds <- mutate(ds, id = factor(id))
-ds$task <- factor(ds$cond)
-ds$bin[ds$bin > 8] <- 8
+ds$task <- factor(ds$cond, levels = c("Walk","Search"))
+ds$bin[ds$bin > 7] <- 7
 #ds$bin <- factor(ds$bin, levels = c(0,1,2,3,4,5,6,7,8,9,10,11), labels = c("0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","80-90","90-100","100-110","110+"))
-ds$bin <- factor(ds$bin, levels = c(0,1,2,3,4,5,6,7,8), labels = c("10","20","30","40","50","60","70","80","90+"))
+ds$bin <- factor(ds$bin, levels = c(0,1,2,3,4,5,6,7), labels = c("10","20","30","40","50","60","70","80+"))
 ds$eye_prop <- abs(ds$eye_prop)
 ds$head_prop <- abs(ds$head_prop)
 ds$eye <- abs(ds$eye)
@@ -40,17 +40,19 @@ ds$head <- abs(ds$head)
 #AVERAGING BY SAMPLE, USING SHIFT BINS
 ds %>% group_by(task,id, bin) %>% 
   summarise(head_prop = mean(head_prop), na.rm = T) %>% 
-  lmer(head_prop ~ bin*task + (1|id),data = .) -> res
+  lmer(head_prop ~ bin*task + (1|id), data = .) -> res
 summary(res)
 anova(res)
 emmeans(res, pairwise~task|bin,adjust = "Holm")
 contrast(emmeans(res, ~bin|task), "consec",adjust = "Holm")
 contrast(emmeans(res, ~bin|task), "poly")
+contrast(emmeans(res, ~bin*task), "poly") 
+
 
 ds %>% group_by(task, bin) %>% 
   summarise(eye = mean(abs(eye_prop), na.rm = T), n = n(), se_eye = sd(abs(eye_prop), na.rm = T)/sqrt(n), ymin_eye = eye - se_eye, ymax_eye = eye + se_eye, head = mean(abs(head_prop), na.rm = T), se_head = sd(abs(head_prop), na.rm = T)/sqrt(n), ymin_head = head - se_head, ymax_head = head + se_head) %>% 
   ggplot(aes(x = bin, color = task, y = head, ymin = ymin_head, ymax = ymax_head)) + 
-  labs(x = "Total gaze shift(º)", y = "Head contribution to gaze shift (prop.)") + #facet_wrap(~ task) + 
+  labs(x = "Total gaze shift (º)", y = "Head contribution to gaze shift (prop.)") + #facet_wrap(~ task) + 
   #geom_pointrange(aes(x = bin, color = task, y = eye, ymin = ymin_eye, ymax = ymax_eye), size =1, position = position_dodge(.6)) +
   geom_pointrange(size =1, shape = 22, fill = "white", na.rm = T) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + #geom_smooth(method = "loess", na.rm = T) + 

@@ -11,8 +11,6 @@ theme_update(text = element_text(size = 18),
              axis.ticks.length = unit(.25, "cm"), axis.ticks = element_line(size = 1, lineend = "round"),
              legend.key = element_rect(fill = "white")) 
 
-#****TRY PATCHWORK PACKAGE TO PUT PLOTS TOGETHER
-
 # CREATE DATA SET ---------------------------------------------------------------
 ds <- read_csv("summary_stats_mot_corrected.csv", na = "NaN")
 ds <- mutate(ds, id = factor(id))
@@ -47,13 +45,13 @@ dsl %>% group_by(dim, eyehead, task) %>%
   ggplot(aes(x = interaction(dim, task, eyehead))) + geom_boxplot(aes(ymin = ymin, lower = lower, middle = ym, upper = upper, ymax = ymax), stat = "identity") +
   geom_point(data = dsl, aes(y = std, group = interaction(dim, task, eyehead)), na.rm = T)
 
-#POSITION MEANS WITH TOTAL INCLUDED --------
-# POSITION SD MEANS --------------
+#POSITION MEANS WITH TOTAL GAZE INCLUDED --------
 dsl <-  gather(ds, key = "cond", value = "std", "walk_posx_std","search_posx_std","walk_eyex_std","search_eyex_std","walk_gazex_std","search_gazex_std")
 dsl$eye <- factor(ifelse(is.na(str_extract(dsl$cond,"eye")),"","Eye"))
 dsl$head <- factor(ifelse(is.na(str_extract(dsl$cond,"pos")),"","Head"))
-dsl$total <- factor(ifelse(is.na(str_extract(dsl$cond,"gaze")),"","Total"))
+dsl$total <- factor(ifelse(is.na(str_extract(dsl$cond,"gaze")),"","Gaze"))
 dsl$eyehead <- factor(str_c(dsl$eye,dsl$head,dsl$total,sep = ""))
+dsl$eyehead <- factor(dsl$eyehead, levels = c("Eye", "Head","Gaze"))
 dsl$task <- factor(ifelse(is.na(str_extract(dsl$cond,"walk")),"search","walk"), levels = c("walk","search"),labels = c("Walk","Search"))
 
 dsl %>% group_by(eyehead, task) %>% 
