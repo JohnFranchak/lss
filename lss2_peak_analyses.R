@@ -37,40 +37,38 @@ ds$head <- abs(ds$head)
 
 # Head contribution --------------
 
-lmer(head ~ total*task + (task|id),data = ds) -> res
-summary(res)
-anova(res)
-plot(allEffects(res))
-interact_plot(res, pred = total, modx = task, plot.points = F, robust = T)
-
-lmer(head_prop ~ bin*task + (task|id),data = ds) -> res
-summary(res)
-anova(res)
-plot(allEffects(res))
-contrast(emmeans(res, ~bin|task), "poly",adjust = "Holm")
-contrast(emmeans(res, ~task|bin), "pairwise",adjust = "Holm")
-eff_size(emmeans(res, ~bin|task), sigma(res), df.residual(res),method = "poly")
-eff_size(emmeans(res, ~task|bin), sigma(res), df.residual(res),method = "pairwise")
-
-
+#AVERAGING BY SAMPLE, USING SHIFT BINS
 ds %>% group_by(task,id, bin) %>% 
   summarise(head_prop = mean(head_prop), na.rm = T) %>% 
-  lmer(head_prop ~ bin*task + (task|id),data = .) -> res
+  lmer(head_prop ~ bin*task + (1|id),data = .) -> res
 summary(res)
 anova(res)
 emmeans(res, pairwise~task|bin,adjust = "Holm")
+contrast(emmeans(res, ~bin|task), "consec",adjust = "Holm")
 contrast(emmeans(res, ~bin|task), "poly")
 
 ds %>% group_by(task, bin) %>% 
   summarise(eye = mean(abs(eye_prop), na.rm = T), n = n(), se_eye = sd(abs(eye_prop), na.rm = T)/sqrt(n), ymin_eye = eye - se_eye, ymax_eye = eye + se_eye, head = mean(abs(head_prop), na.rm = T), se_head = sd(abs(head_prop), na.rm = T)/sqrt(n), ymin_head = head - se_head, ymax_head = head + se_head) %>% 
   ggplot(aes(x = bin, color = task, y = head, ymin = ymin_head, ymax = ymax_head)) + 
-  labs(x = "Total gaze shift(º)", y = "Proportion of gaze shift") + #facet_wrap(~ task) + 
+  labs(x = "Total gaze shift(º)", y = "Head contribution to gaze shift (prop.)") + #facet_wrap(~ task) + 
   #geom_pointrange(aes(x = bin, color = task, y = eye, ymin = ymin_eye, ymax = ymax_eye), size =1, position = position_dodge(.6)) +
   geom_pointrange(size =1, shape = 22, fill = "white", na.rm = T) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + #geom_smooth(method = "loess", na.rm = T) + 
   theme(legend.position = "bottom") +
   ylim(c(.4,.7))
 ggsave("figures/gaze_prop.pdf", units = "in", width = 10, height = 4)
+
+#plot individuals
+ds %>% group_by(id, task, bin) %>% 
+  summarise(eye = mean(abs(eye_prop), na.rm = T), n = n(), se_eye = sd(abs(eye_prop), na.rm = T)/sqrt(n), ymin_eye = eye - se_eye, ymax_eye = eye + se_eye, head = mean(abs(head_prop), na.rm = T), se_head = sd(abs(head_prop), na.rm = T)/sqrt(n), ymin_head = head - se_head, ymax_head = head + se_head) %>% 
+  ggplot(aes(x = bin, color = id, y = head, ymin = ymin_head, ymax = ymax_head, group = id)) + 
+  labs(x = "Total gaze shift(º)", y = "Head contribution to gaze shift (prop.)") + facet_wrap(~ task) + 
+  geom_smooth(method = "loess", na.rm = T, se = F) + 
+  theme(legend.position = "bottom")
+  #ylim(c(.4,.7))
+
+
+
 
 #Eye contribution in degrees
 ds %>% group_by(task, bin) %>% 
@@ -116,6 +114,24 @@ ds %>% group_by(task, bin) %>%
     #geom_smooth(aes(x = total, y = eye_prop, color = task)) +
     geom_smooth(aes(x = total, y = head_prop, color = task), linetype = "dashed") +
     xlim(0,100) + ylim(0,1) + geom_hline(yintercept = .5, color = "gray")
+  
+  
+  #NOT AVERAGED BY SAMPLE
+  lmer(head ~ total*task + (task|id),data = ds) -> res
+  summary(res)
+  anova(res)
+  plot(allEffects(res))
+  interact_plot(res, pred = total, modx = task, plot.points = F, robust = T)
+  
+  lmer(head_prop ~ bin*task + (task|id),data = ds) -> res
+  summary(res)
+  anova(res)
+  plot(allEffects(res))
+  contrast(emmeans(res, ~bin|task), "poly",adjust = "Holm")
+  contrast(emmeans(res, ~task|bin), "pairwise",adjust = "Holm")
+  eff_size(emmeans(res, ~bin|task), sigma(res), df.residual(res),method = "poly")
+  eff_size(emmeans(res, ~task|bin), sigma(res), df.residual(res),method = "pairwise")
+  
   
 #NO OUTLIERS
 # dsl %>% group_by(dim, eyehead, task) %>% 

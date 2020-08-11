@@ -35,6 +35,8 @@ dsl %>% split(.$dim) %>%
   map(~ lmer(std ~ task + (1|id),data = .)) %>% 
   map(anova)
 
+t.test(ds$walk_eyex_std, ds$search_eyex_std, paired = T)
+
 dsl %>% group_by(dim, task) %>% filter(dim == "x") %>% 
   summarise(stdev = mean(std, na.rm = T), n = n(), se = sd(std, na.rm = T)/sqrt(n), ymin = stdev - se, ymax = stdev + se) %>% 
   ggplot() + 
