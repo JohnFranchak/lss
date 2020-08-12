@@ -52,13 +52,13 @@ contrast(emmeans(res, ~bin*task), "poly")
 ds %>% group_by(task, bin) %>% 
   summarise(eye = mean(abs(eye_prop), na.rm = T), n = n(), se_eye = sd(abs(eye_prop), na.rm = T)/sqrt(n), ymin_eye = eye - se_eye, ymax_eye = eye + se_eye, head = mean(abs(head_prop), na.rm = T), se_head = sd(abs(head_prop), na.rm = T)/sqrt(n), ymin_head = head - se_head, ymax_head = head + se_head) %>% 
   ggplot(aes(x = bin, color = task, y = head, ymin = ymin_head, ymax = ymax_head)) + 
-  labs(x = "Total gaze shift (º)", y = "Head contribution to gaze shift (prop.)") + #facet_wrap(~ task) + 
+  labs(x = "Total gaze shift (º)", y = "Head contribution (prop.)") + #facet_wrap(~ task) + 
   #geom_pointrange(aes(x = bin, color = task, y = eye, ymin = ymin_eye, ymax = ymax_eye), size =1, position = position_dodge(.6)) +
-  geom_pointrange(size =1, shape = 22, fill = "white", na.rm = T) +
+  geom_pointrange(size =2, shape = 22, fill = "white", na.rm = T) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + #geom_smooth(method = "loess", na.rm = T) + 
   theme(legend.position = "bottom") +
   ylim(c(.4,.7))
-ggsave("figures/gaze_prop.pdf", units = "in", width = 10, height = 4)
+ggsave("figures/head_prop.pdf", units = "in", width = 6, height = 4)
 
 #plot individuals
 ds %>% group_by(id, task, bin) %>% 
