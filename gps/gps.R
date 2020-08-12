@@ -3,8 +3,6 @@ library(ggplot2)
 library(ggmap)
 library(dplyr)
 
-register_google(key = "AIzaSyAL4i-C_dr81Q5WTCBv6oklVH3bRXKId1A") 
-
 search <- read_csv("/Users/johnfranchak/Documents/GitHub/lss/gps/searching_222.csv")
 search$lat <- search$`33.973263`
 search$long <- search$`-117.32558`
