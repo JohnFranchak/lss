@@ -54,11 +54,11 @@ ds %>% group_by(task, bin) %>%
   ggplot(aes(x = bin, color = task, y = head, ymin = ymin_head, ymax = ymax_head)) + 
   labs(x = "Total gaze shift (º)", y = "Head contribution (prop.)") + #facet_wrap(~ task) + 
   #geom_pointrange(aes(x = bin, color = task, y = eye, ymin = ymin_eye, ymax = ymax_eye), size =1, position = position_dodge(.6)) +
-  geom_pointrange(size =2, shape = 22, fill = "white", na.rm = T) +
+  geom_pointrange(size =1.25, shape = 22, fill = NA, na.rm = T) +
   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + #geom_smooth(method = "loess", na.rm = T) + 
   theme(legend.position = "bottom") +
-  ylim(c(.4,.7))
-ggsave("figures/head_prop.pdf", units = "in", width = 6, height = 4)
+  ylim(c(.3,.7))
+ggsave("figures/head_prop.pdf", units = "in", width = 5, height = 4)
 
 #plot individuals
 ds %>% group_by(id, task, bin) %>% 
