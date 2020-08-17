@@ -4,7 +4,7 @@ library(tidyverse)
 library(effects)
 library(lme4)
 library(lmerTest)
-library(gridExtra)
+library(rstatix)
 library(rcompanion)
 library(psych)
 library(ggforce)
@@ -31,11 +31,9 @@ dsl <-  gather(ds, key = "cond", value = "std", "walk_eyex_std","search_eyex_std
 dsl$dim <- factor(ifelse(is.na(str_extract(dsl$cond,"x")),"y","x"))
 dsl$task <- factor(ifelse(is.na(str_extract(dsl$cond,"walk")),"search","walk"),levels = c("walk","search"),labels = c("Walk","Search"))
 
-dsl %>% split(.$dim) %>% 
-  map(~ lmer(std ~ task + (1|id),data = .)) %>% 
-  map(anova)
-
-t.test(ds$walk_eyex_std, ds$search_eyex_std, paired = T)
+dsl %>% filter(dim == "x") %>% group_by(task) %>% get_summary_stats(std, type = "mean_sd")
+dsl %>% filter(dim == "x") %>% t_test(std ~ task, paired = TRUE, var.equal = T, detailed = T) %>% add_significance()
+dsl %>% filter(dim == "x") %>% cohens_d(std ~ task, paired = TRUE) 
 
 dsl %>% group_by(dim, task) %>% filter(dim == "x") %>% 
   summarise(stdev = mean(std, na.rm = T), n = n(), se = sd(std, na.rm = T)/sqrt(n), ymin = stdev - se, ymax = stdev + se) %>% 
@@ -58,8 +56,10 @@ dsl <-  gather(ds, key = "cond", value = "speed", "walk_eyex_speed","search_eyex
 dsl$dim <- factor(ifelse(is.na(str_extract(dsl$cond,"x")),"y","x"))
 dsl$task <- factor(ifelse(is.na(str_extract(dsl$cond,"walk")),"search","walk"),levels = c("walk","search"),labels = c("Walk","Search"))
 
-res <- lmer(speed ~ task + (1|id),data = dsl)
-anova(res)
+shapiro_test(ds$walk_eyex_speed - ds$search_eyex_speed)
+dsl %>% filter(dim == "x") %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+dsl %>% filter(dim == "x") %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+dsl %>% filter(dim == "x") %>% cohens_d(speed ~ task, paired = TRUE) 
 
 dsl %>% group_by(dim, task) %>% filter(dim == "x") %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>% 
@@ -79,12 +79,15 @@ dsl %>% group_by(dim, task) %>%
 
 # GPS DATA  --------------
 #SPEED BY TASK
-t.test(ds$walk_path_speed, ds$search_path_speed, paired = T)
 cor.test(ds$walk_path_speed, ds$search_path_speed)
-describe(ds[,c("walk_path_speed", "search_path_speed")], na.rm = T)
 
-  ds %>% gather(key = "task", value = "speed", "walk_path_speed", "search_path_speed") %>% 
-  mutate(task = factor(task, levels = c("walk_path_speed", "search_path_speed"), labels = c("Walk", "Search"))) -> dsl
+ds %>% gather(key = "task", value = "speed", "walk_path_speed", "search_path_speed") %>% 
+mutate(task = factor(task, levels = c("walk_path_speed", "search_path_speed"), labels = c("Walk", "Search"))) -> dsl
+
+dsl %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+dsl %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+dsl %>% cohens_d(speed ~ task, paired = TRUE) 
+  
   dsl %>%  group_by(task) %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>%
   ggplot() + 
@@ -97,12 +100,15 @@ describe(ds[,c("walk_path_speed", "search_path_speed")], na.rm = T)
   #ggsave("figures/lss1_walking_speed.pdf", units = "in", width = 5, height = 4)
 
 #SPEED SD BY TASK
-t.test(ds$walk_path_speed_sd, ds$search_path_speed_sd, paired = T)
 cor.test(ds$walk_path_speed_sd, ds$search_path_speed_sd)
-describe(ds[,c("walk_path_speed_sd", "search_path_speed_sd")], na.rm = T)
 
 ds %>% gather(key = "task", value = "speed", "walk_path_speed_sd", "search_path_speed_sd") %>% 
   mutate(task = factor(task, levels = c("walk_path_speed_sd", "search_path_speed_sd"), labels = c("Walk", "Search"))) -> dsl
+
+dsl %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+dsl %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+dsl %>% cohens_d(speed ~ task, paired = TRUE) 
+
 dsl %>%  group_by(task) %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>%
   ggplot() + 
@@ -115,12 +121,15 @@ dsl %>%  group_by(task) %>%
   #ggsave("figures/lss1_walking_speed_sd.pdf", units = "in", width = 5, height = 4)
 
 #STRAIGHTNESS BY TASK
-t.test(ds$walk_straightness, ds$search_straightness, paired = T)
 cor.test(ds$walk_straightness, ds$search_straightness)
-describe(ds[,c("walk_straightness", "search_straightness")], na.rm = T)
 
 ds %>% gather(key = "task", value = "speed", "walk_straightness", "search_straightness") %>% 
   mutate(task = factor(task, levels = c("walk_straightness", "search_straightness"), labels = c("Walk", "Search"))) -> dsl
+
+dsl %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+dsl %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+dsl %>% cohens_d(speed ~ task, paired = TRUE) 
+
 dsl %>%  group_by(task) %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>%
   ggplot() + 
