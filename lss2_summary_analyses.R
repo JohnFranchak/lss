@@ -1,4 +1,4 @@
-pkgs <- c("multcomp", "emmeans", "tidyverse", "effects", "lme4", "lmerTest", "psych","ggforce","patchwork")
+pkgs <- c("multcomp", "emmeans", "tidyverse", "effects", "lme4", "lmerTest", "psych","ggforce","patchwork", "rstatix")
 #lapply(pkgs[!(pkgs %in% installed.packages())], install.packages)
 lapply(pkgs, library, character.only = TRUE)
 
@@ -135,12 +135,15 @@ t.test(ds$walk_gazex_std,ds$search_gazex_std, paired = T)
 
 # GPS DATA  --------------
 #SPEED BY TASK
-t.test(ds$walk_path_speed, ds$search_path_speed, paired = T)
 cor.test(ds$walk_path_speed, ds$search_path_speed)
-describe(ds[,c("walk_path_speed", "search_path_speed")], na.rm = T)
 
   ds %>% gather(key = "task", value = "speed", "walk_path_speed", "search_path_speed") %>% 
   mutate(task = factor(task, levels = c("walk_path_speed", "search_path_speed"), labels = c("Walk", "Search"))) -> dsl
+  
+  dsl %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+  dsl %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+  dsl %>% cohens_d(speed ~ task, paired = TRUE) 
+  
   dsl %>%  group_by(task) %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>%
   ggplot() + 
@@ -153,12 +156,15 @@ describe(ds[,c("walk_path_speed", "search_path_speed")], na.rm = T)
   #ggsave("figures/lss2_walking_speed.pdf", units = "in", width = 5, height = 4)
 
 #SPEED SD BY TASK
-t.test(ds$walk_path_speed_sd, ds$search_path_speed_sd, paired = T)
 cor.test(ds$walk_path_speed_sd, ds$search_path_speed_sd)
-describe(ds[,c("walk_path_speed_sd", "search_path_speed_sd")], na.rm = T)
 
 ds %>% gather(key = "task", value = "speed", "walk_path_speed_sd", "search_path_speed_sd") %>% 
   mutate(task = factor(task, levels = c("walk_path_speed_sd", "search_path_speed_sd"), labels = c("Walk", "Search"))) -> dsl
+
+dsl %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+dsl %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+dsl %>% cohens_d(speed ~ task, paired = TRUE) 
+
 dsl %>%  group_by(task) %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>%
   ggplot() + 
@@ -171,11 +177,15 @@ dsl %>%  group_by(task) %>%
   #ggsave("figures/lss2_walking_speed_sd.pdf", units = "in", width = 5, height = 4)
 
 #STRAIGHTNESS BY TASK
-t.test(ds$walk_straightness, ds$search_straightness, paired = T)
 cor.test(ds$walk_straightness, ds$search_straightness)
-describe(ds[,c("walk_straightness", "search_straightness")], na.rm = T)
+
 ds %>% gather(key = "task", value = "speed", "walk_straightness", "search_straightness") %>% 
   mutate(task = factor(task, levels = c("walk_straightness", "search_straightness"), labels = c("Walk", "Search"))) -> dsl
+
+dsl %>% group_by(task) %>% get_summary_stats(speed, type = "mean_sd")
+dsl %>% t_test(speed ~ task, paired = TRUE) %>% add_significance()
+dsl %>% cohens_d(speed ~ task, paired = TRUE) 
+
 dsl %>%  group_by(task) %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>%
   ggplot() + 
