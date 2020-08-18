@@ -29,6 +29,10 @@ res %>% map(anova)
 res %>% map(~ emmeans(.,pairwise~eyehead|task, adjust = "Holm"))
 res %>% map(~ emmeans(.,pairwise~task|eyehead, adjust = "Holm"))
 
+#Descriptives
+dsl %>% group_by(dim, eyehead, task) %>% filter(dim == "x") %>% 
+  summarise(spread = mean(std, na.rm = T), n = n(), SD = sd(std, na.rm = T))
+
 dsl %>% group_by(dim, eyehead, task) %>% filter(dim == "x") %>% 
   summarise(stdev = mean(std, na.rm = T), n = n(), se = sd(std, na.rm = T)/sqrt(n), ymin = stdev - se, ymax = stdev + se) %>% 
   ggplot() + 
@@ -76,6 +80,10 @@ res %>% map(anova)
 res %>% map(~ emmeans(.,pairwise~eyehead|task, adjust = "Holm"))
 res %>% map(~ emmeans(.,pairwise~task|eyehead, adjust = "Holm"))
 
+#Descriptives
+dsl %>% group_by(dim, eyehead, task) %>% filter(dim == "x") %>% 
+  summarise(Speed = mean(speed, na.rm = T), n = n(), STD = sd(speed, na.rm = T))
+
 dsl %>% group_by(dim, eyehead, task) %>% filter(dim == "x") %>% 
   summarise(Speed = mean(speed, na.rm = T), n = n(), se = sd(speed, na.rm = T)/sqrt(n), ymin = Speed - se, ymax = Speed + se) %>% 
   ggplot() + 
@@ -116,22 +124,15 @@ dsl %>% group_by(dim, task) %>%
   geom_point(data = dsl, aes(y = corr, group = interaction(dim, task)))
 
 # LONG FORMAT POSITION TOTAL SD --------------
-dsl <-  gather(ds, key = "cond", value = "corr", "walk_gazex_std","walk_gazey_std","search_gazex_std","search_gazey_std")
+dsl <-  gather(ds, key = "cond", value = "std", "walk_gazex_std","walk_gazey_std","search_gazex_std","search_gazey_std")
 dsl$dim <- factor(ifelse(is.na(str_extract(dsl$cond,"x")),"y","x"))
+dsl <- filter(dsl, dsl$dim == "x")
 dsl$task <- factor(ifelse(is.na(str_extract(dsl$cond,"walk")),"search","walk"),levels = c("walk","search"),labels = c("Walk","Search"))
 
-t.test(ds$walk_gazex_std,ds$search_gazex_std, paired = T)
+dsl %>% group_by(task) %>% get_summary_stats(std, type = "mean_sd")
+dsl %>% t_test(std ~ task, paired = TRUE) %>% add_significance()
+dsl %>% cohens_d(std ~ task, paired = TRUE) 
 
-#Don't need this graph, put them all together
-# dsl %>% group_by(dim, task) %>% filter(dim == "x") %>% 
-#   summarise(stdev = mean(corr), n = n(), se = sd(corr)/sqrt(n), ymin = stdev - se, ymax = stdev + se) %>%
-#   ggplot() + 
-#   geom_sina(data = filter(dsl, dim == "x"), aes(y = corr, x = task, color = task), maxwidth = .5, position = position_dodge(.6), alpha = .5, size = 3) +
-#   geom_errorbar(aes(x = task, ymin = ymin, ymax = ymax), color = "black", size =1, width = .3, position = position_dodge(.6)) +
-#   scale_color_manual(values = cbp1[c(7,6)], name = "Task") + 
-#   labs(x = "", y = "Eye + head SD (º)") + 
-#   scale_y_continuous(breaks = c(10,20,30,40), limits = c(10,40)) 
-#   ggsave("figures/lss2_position_sd_total.pdf", units = "in", width = 4, height = 4)
 
 # GPS DATA  --------------
 #SPEED BY TASK
