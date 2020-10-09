@@ -23,7 +23,7 @@ theme_update(text = element_text(size = 18),
 # CREATE DATA SET ---------------------------------------------------------------
 ds <- read_csv("summary_stats_LSS1.csv", na = "NaN")
 ds <- mutate(ds, id = factor(id))
-#ds <- filter(ds, id != 35) #Bad posttest eye tracking accuracy
+ds <- filter(ds, id != 35) #Bad posttest eye tracking accuracy
 ds[ds["id"] == 13, "search_eyex_speed"] <- NA
 
 # POSITION SD MEANS --------------
