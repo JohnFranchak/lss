@@ -144,3 +144,14 @@ dsl %>%  group_by(task) %>%
   p1 + p2 + p3
   ggsave("figures/lss1_walking_stats_composite.pdf", units = "in", width = 9, height = 4)
   
+## TOTAL WALKING PATH AND TASK TIME
+  
+ds <- ds %>% mutate(walk_task_time = walk_len/30, 
+                    search_task_time = search_len/30,
+                    walk_path_speed_recalculated = walk_path_total/walk_task_time,
+                    search_path_speed_recalculated = search_path_total/search_task_time)
+
+ds <- ds %>% mutate(walk_task_time_min = walk_len/30/60, 
+                    search_task_time_min = search_len/30/60)
+
+ds %>% get_summary_stats(walk_task_time, walk_path_total, search_task_time, search_path_total) -> task_summary

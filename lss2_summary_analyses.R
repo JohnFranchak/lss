@@ -350,3 +350,16 @@ ds %>% gather(key = "cond", value = "prop", "walk_bothcent", "walk_eyecent","wal
   
   t.test(ds$walk_eyexspeed_corr,ds$search_eyexspeed_corr, paired = T)
   t.test(ds$walk_headxspeed_corr,ds$search_headxspeed_corr, paired = T)
+  
+  ## TASK TIME AND DISTANCE -----------
+  
+  ds <- ds %>% mutate(walk_task_time = walk_len/30, 
+                      search_task_time = search_len/30,
+                      walk_path_speed_recalculated = walk_path_total/walk_task_time,
+                      search_path_speed_recalculated = search_path_total/search_task_time)
+  
+  ds <- ds %>% mutate(walk_task_time_min = walk_len/30/60, 
+                      search_task_time_min = search_len/30/60)
+  
+  ds %>% get_summary_stats(walk_task_time, walk_path_total, search_task_time, search_path_total) -> task_summary
+  
