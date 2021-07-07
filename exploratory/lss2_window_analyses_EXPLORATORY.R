@@ -18,10 +18,10 @@ my_theme <-   theme(text = element_text(size = 20),
                     panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
                     legend.key = element_rect(fill = "white")) 
 
-ds <- read_csv("~/Dropbox/LSS/window_stats.csv", na = "NaN")
+ds <- read_csv("window_stats.csv", na = "NaN")
 ds <- mutate(ds, id = factor(id))
 ds$task <- factor(ds$task,levels = c(1,2),labels = c("walk","search"))
-ds <- filter(ds, id != 212) #What about 210?
+ds <- filter(ds, id != 212 & id != 203) 
 
 #X CORR
 ggplot(ds, aes(x = win, y = eyexpos_corr, color = id)) + facet_wrap(~ task) + 
